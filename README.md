@@ -1,2 +1,3 @@
-# standard-webservice
-The template repository for a standard webservice for ndev
+# rest
+This is the template repository for a standard RESTful webservice for ndev.
+
