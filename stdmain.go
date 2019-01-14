@@ -54,11 +54,17 @@ func logAndDie(logger *log.Entry, reason string) func() {
 // [x] included cors handling
 // [x] print api docs to arbitrary file (instead of just stdout)
 // [x] add a standard /prefix/docs that returns documentation for this part of the API
-// [ ] figure out a way to generate unified docs through a /docs endpoint that knows about the rest
 // [x] either strip prefix or inject one at startup time
-// [ ] request throttling
 // [x] honeycomb logging
 // [x] unified config handling
+// [x] super simple setup and use
+// [ ] simple dockerfiles for build and deploy
+// [ ] circleci sample for easy deploy on merge/tag
+// [ ] set up AWS ALB routing and AWS ECS for zero-downtime deploys
+// [ ] wrapper for AWS Dynamo for easy data storage
+// [ ] figure out a way to generate unified docs through a /docs endpoint that knows about the rest
+// [ ] auth token middleware for APIs
+// [ ] request throttling to limit bandwidth
 
 // Builder is the interface to which all service builders must conform
 type Builder interface {

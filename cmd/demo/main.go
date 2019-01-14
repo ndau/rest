@@ -1,6 +1,6 @@
 package main
 
-import rest "github.com/oneiro-ndev/standard-webservice"
+import "github.com/oneiro-ndev/rest"
 
 func main() {
 	cf := rest.DefaultConfig()
