@@ -58,6 +58,7 @@ func logAndDie(logger *log.Entry, reason string) func() {
 // [x] honeycomb logging
 // [x] unified config handling
 // [x] super simple setup and use
+// [x] default health check
 // [ ] simple dockerfiles for build and deploy
 // [ ] circleci sample for easy deploy on merge/tag
 // [ ] set up AWS ALB routing and AWS ECS for zero-downtime deploys
@@ -81,6 +82,8 @@ func DefaultConfig() *Config {
 	cf.AddFlag("CORS_DEBUG", false)
 	cf.AddInt("port", 8080)
 	cf.AddString("rootpath", "/")
+	cf.AddDuration("READ_TIMEOUT", "5s")
+	cf.AddDuration("WRITE_TIMEOUT", "5s")
 	cf.AddString("HONEYCOMB_DATASET", "ndev_backend")
 	cf.AddString("HONEYCOMB_KEY", "")
 	return cf
@@ -133,8 +136,10 @@ func StandardMain(cf *Config, builder Builder) {
 
 	// now create the server
 	server := &http.Server{
-		Addr:    fmt.Sprintf(":%v", cf.GetInt("port")),
-		Handler: handler,
+		Addr:         fmt.Sprintf(":%v", cf.GetInt("port")),
+		Handler:      handler,
+		ReadTimeout:  cf.GetDuration("READ_TIMEOUT"),
+		WriteTimeout: cf.GetDuration("WRITE_TIMEOUT"),
 	}
 	logger.WithField("port", cf.GetInt("port")).Info("server listening")
 

@@ -6,12 +6,14 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // Config maintains a map of configuration values. They can be read from
 // the environment and/or the command line (command line overrides environment).
 // The names of configuration items are strings containing letters, numbers,
-// underscores, and hyphens. They can be any of int, string, []string, or bool.
+// underscores, and hyphens. They can be any of int, string, []string, duration,
+// or bool.
 // Although there are lots of configuration packages out there, there didn't
 // seem to be one that was both simple and would allow the standard service
 // to define part of the configuration, and client packages to define the
@@ -49,6 +51,12 @@ func (cf *Config) AddStringArray(name string, defaults ...string) {
 // AddFlag adds a config element that is a boolean flag with a default value.
 func (cf *Config) AddFlag(name string, def bool) {
 	(*cf)[clean(name)] = ConfigItem{Name: name, Type: "bool", Default: def}
+}
+
+// AddDuration adds a config element that is a duration with a default value.
+// The duration is specified as a string and is returned as a time.Duration.
+func (cf *Config) AddDuration(name string, def string) {
+	(*cf)[clean(name)] = ConfigItem{Name: name, Type: "duration", Default: def}
 }
 
 // AddRequiredInt adds a config element that is an integer with no default value
@@ -91,11 +99,21 @@ func parseValue(s string, typ string) interface{} {
 	case "[]string":
 		v = strings.Split(s, ",")
 	case "bool":
+		// for flags, simply specifying the name means "true"
 		if s == "" || strings.HasPrefix(strings.ToLower(s), "t") {
 			v = true
 		} else {
 			v = false
 		}
+	case "duration":
+		if s == "" {
+			return time.Duration(0)
+		}
+		d, err := time.ParseDuration(s)
+		if err != nil {
+			return time.Duration(0)
+		}
+		return d
 	}
 	return v
 }
@@ -179,6 +197,15 @@ func (cf *Config) GetString(name string) string {
 		return ""
 	}
 	return v.(string)
+}
+
+// GetDuration retrieves a duration from the config as a time.Duration.
+func (cf *Config) GetDuration(name string) time.Duration {
+	v, ok := cf.Get(name)
+	if !ok {
+		return time.Duration(0)
+	}
+	return v.(time.Duration)
 }
 
 // GetFlag retrieves a boolean from the config, or false if not found.
