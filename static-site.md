@@ -42,6 +42,8 @@ This document is intended to serve as a guide and plan to create a static site t
   - `AWS_SECRET_ACCESS_KEY` - from csv
   - `AWS_DEFAULT_REGION` - us-east-1
   - [ ] `aws iam list-users` should work
+- Environment variables for configuration can be stored in
+    https://circleci.com/gh/oneiro-ndev/commands/edit#env-vars
 - Add config.yaml to blockchain repo
   - config.yaml should
     - [ ] start with a container with aws-cli
