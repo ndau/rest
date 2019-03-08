@@ -244,6 +244,7 @@ register_definition() {
 configure_aws_cli
 push_ecr_image
 deploy_cluster
+
 # test the deployment
 
 TARGET_GROUP_ARN=$(aws ecs describe-services --cluster $ECS_CLUSTER_NAME --services $ECS_SERVICE_NAME | jq -r '.services[0].loadBalancers[0].targetGroupArn')

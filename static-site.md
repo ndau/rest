@@ -27,6 +27,8 @@ This document is intended to serve as a guide and plan to create a static site t
   - configure bucket for static website hosting: Bucket | Properties | Static website hosting. Add index.html.
   - [optional] configure any redirects forom other domains by adding additional buckets and setting them up to redirect to the real target bucket.
 
+Turning on cloudfront for the S3 bucket would transfer the content to Amazon's CDN. Local users wouldn't notice much of a difference but global users would. Redirects are possible so multiple buckets wouldn't be required for `www.`. It also supports CORS.
+
 ## Route53
 
   - Create an A record for the domain `blockchain-explorer.service.ndau.tech`.
