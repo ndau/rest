@@ -29,8 +29,6 @@ This design document is a work in progress.
 2. CircleCI
   * test
   * build
-  * dockerize
-
 
 ## master commit
 
@@ -45,8 +43,7 @@ This design document is a work in progress.
 4. ECS updates the service
 5. Integration tests
 
-
-## tagged `-staging` commit
+## -dev commit
 
 1. Commit and push to github
 2. CircleCI
@@ -54,10 +51,23 @@ This design document is a work in progress.
   * build
   * dockerize
   * upload to ECR
+
+
+## tagged `-staging` commit
+
+1. Push tag to github
+2. CircleCI
   * update staging task definition with ECS
-3. ECR saves the staging image
-4. ECS updates the staging service
-5. Integration tests run on staging deployment
+3. ECS updates the staging service
+4. Integration tests run on staging deployment
+
+## tagged `-prod` commit
+
+1. Push tag to github
+2. CircleCI
+  * update task definition with ECS
+3. ECS updates the service
+4. Integration tests run on deployment
 
 
 # Infrastructure setup
@@ -116,14 +126,10 @@ The executable can be debugged like normal, though should probably get variables
 # Staging
 
 to provide a staging deploy, each service must
-* Creation of a secondary task definition
+* use templates to generate a secondary task definition
 
 
-# Metrics
-  ? AWS
-
-
-# Logs
+# Observability
   Honeycomb
 
 
@@ -135,10 +141,7 @@ to provide a staging deploy, each service must
 
 # Secrets
 
-CircleCI environment variables are the simplest way to pass config to the running container. When a task definition is updated, it can include environment variables. This way, environment variables live in AWS task definitions, which on circle are transient files, and do not show up in the image. They can also be baked into the image, but for secrets this is less desirable. If no one will ever get access to any of our images in ECR, this is ok.
-
-Systems manager parameters looks complicated.
-https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-paramstore-about.html
+CircleCI environment variables are the simplest way to pass config to the running container. When a task definition is updated, it can include environment variables. This way, environment variables live in AWS task definitions, which on circle are transient files, and do not show up in the image. They can also be baked into the image, but for secrets this is less desirable. If no one will ever get access to any of our images in ECR, this baking them in is ok. Otherwise, they live in task definitions.
 
 
 # Reference
@@ -155,6 +158,8 @@ aws configure set default.output json
 
 ## deploy.sh
 
+
+
 echo 'export ECR_REPOSITORY_NAME="${AWS_RESOURCE_NAME_PREFIX}"' >> $BASH_ENV
 echo 'export ECS_CLUSTER_NAME="${AWS_RESOURCE_NAME_PREFIX}-cluster"' >> $BASH_ENV
 echo 'export ECS_SERVICE_NAME="${AWS_RESOURCE_NAME_PREFIX}-service"' >> $BASH_ENV
@@ -163,7 +168,7 @@ export ECS_TASK_FAMILY_NAME="${AWS_RESOURCE_NAME_PREFIX}-service"
 export ECS_CONTAINER_DEFINITION_NAME="${AWS_RESOURCE_NAME_PREFIX}-service"
 export EXECUTION_ROLE_ARN="arn:aws:iam::$AWS_ACCOUNT_ID:role/${AWS_RESOURCE_NAME_PREFIX}-ecs-execution-role"
 
-> These bash variable things never work for me. I usually need to source $BASH_ENV to re export them.
+> TODO Figure out why bash variables don't seem to work right in CircleCI. Current workaround is to `source $BASH_ENV` to re export them.
 
 #!/usr/bin/env bash
 
@@ -262,6 +267,15 @@ going from kubernetes to X
     * initialization
     * managing configuration
 
+* write a doc on how to go from localnet to one big container
+  - make .localnet directory, share that directory as a volume
+  - [one or the other]
+    - ./bin/setup.sh N
+    - Copy already setup files to the shared .localnet directory.
+  - copy everything in commands
+  - reset, run
+
+
 * write a doc on how to get a nodegroup up with minikube
   - install dependencies
   - give creds to user with access to ECR
@@ -270,14 +284,12 @@ going from kubernetes to X
   - run minikube
   - run up.sh
 
+~~~
 * write a doc on how one might go about moving from kubernetes to docker compose
   - Convert all commands run in pods to a script
   - init containers are now image dependencies
   - environment variables map
   - one big volume is shared with specific directories for each service
   - internal service names are
+~~~
 
-* write a doc on how to go from localnet to one big container
-  - make .localnet directory, share that volume
-  - copy everything in commands
-  - reset, run
