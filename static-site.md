@@ -45,7 +45,7 @@ Turning on cloudfront for the S3 bucket would transfer the content to Amazon's C
   - `AWS_DEFAULT_REGION` - us-east-1
   - [ ] `aws iam list-users` should work
 - Environment variables for configuration can be stored in
-    https://circleci.com/gh/oneiro-ndev/commands/edit#env-vars
+    https://circleci.com/gh/oneiro-ndev/{repo}/edit#env-vars
 - Add config.yaml to blockchain repo
   - config.yaml should
     - [ ] start with a container with aws-cli

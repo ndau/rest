@@ -51,7 +51,7 @@ This design document is a work in progress.
   * build
   * dockerize
   * upload to ECR
-
+3. ECR saves the image
 
 ## tagged `-staging` commit
 
