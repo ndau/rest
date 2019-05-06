@@ -1,8 +1,11 @@
 package main
 
 import (
+	"io/ioutil"
 	"net/http"
+	"os"
 	"strconv"
+	"time"
 
 	"github.com/go-zoo/bone"
 	"github.com/oneiro-ndev/ndau/pkg/ndauapi/reqres"
@@ -35,5 +38,44 @@ func Count() http.HandlerFunc {
 			resp[i-first] = i
 		}
 		reqres.RespondJSON(w, reqres.OKResponse(resp))
+	}
+}
+
+// Passthrough passes the query onto a child server (which
+// is expected to be the same server)
+func Passthrough(u string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		first := bone.GetValue(r, "first")
+		last := bone.GetValue(r, "last")
+
+		client := http.Client{
+			Timeout: 1 * time.Second,
+		}
+		req, _ := http.NewRequest("GET", u+"/count/"+first+"/"+last, nil)
+		resp, err := client.Do(req)
+		if err != nil {
+			reqres.RespondJSON(w, reqres.NewAPIError("bad response from passthrough", http.StatusInternalServerError))
+			return
+		}
+
+		body, _ := ioutil.ReadAll(resp.Body)
+		realresp := reqres.Response{
+			Bd:  body,
+			Sts: resp.StatusCode,
+		}
+		reqres.RespondJSON(w, realresp)
+	}
+}
+
+// Die kills the server after a 1 second delay
+func Die() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		code := bone.GetValue(r, "code")
+		exitcode, _ := strconv.Atoi(code)
+		go func() {
+			time.Sleep(1 * time.Second)
+			os.Exit(exitcode)
+		}()
+		reqres.RespondJSON(w, reqres.OKResponse("Shutting down in 1 sec"))
 	}
 }

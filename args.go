@@ -199,13 +199,21 @@ func (cf *Config) GetString(name string) string {
 	return v.(string)
 }
 
-// GetDuration retrieves a duration from the config as a time.Duration.
+// GetDuration retrieves a duration (in ParseDuration format) from the config as a time.Duration.
 func (cf *Config) GetDuration(name string) time.Duration {
 	v, ok := cf.Get(name)
 	if !ok {
 		return time.Duration(0)
 	}
-	return v.(time.Duration)
+	switch t := v.(type) {
+	case string:
+		d, _ := time.ParseDuration(t)
+		return d
+	case time.Duration:
+		return t
+	default:
+		return time.Duration(0)
+	}
 }
 
 // GetFlag retrieves a boolean from the config, or false if not found.

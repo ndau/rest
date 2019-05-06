@@ -42,10 +42,26 @@ func WatchSignals(fhup, fint, fterm func()) {
 	}()
 }
 
-func logAndDie(logger *log.Entry, reason string) func() {
+// func (c *Cycle) interceptSignals() {
+// 	ch := make(chan os.Signal, 1)
+// 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
+// 	for {
+// 		select {
+// 		case sig := <-ch:
+// 			log.Printf("lifecycle received %q, terminating\n", sig)
+// 			c.End()
+// 			return
+// 		case <-c.Ctx.Done():
+// 			return
+// 		}
+// 	}
+
+// }
+
+// FatalFunc returns a function that logs and shuts down the service
+func FatalFunc(builder Builder, reason string) func() {
 	return func() {
-		logger.Info("shutting down because of " + reason)
-		os.Exit(0)
+		builder.GetLogger().Fatalf("shutting down because of " + reason)
 	}
 }
 
@@ -66,10 +82,12 @@ func logAndDie(logger *log.Entry, reason string) func() {
 // [ ] figure out a way to generate unified docs through a /docs endpoint that knows about the rest
 // [ ] auth token middleware for APIs
 // [ ] request throttling to limit bandwidth
+// [ ] contexts for cancellation
 
 // Builder is the interface to which all service builders must conform
 type Builder interface {
 	Build(logger *log.Entry, path string) *boneful.Service
+	GetLogger() *log.Entry
 }
 
 // DefaultConfig creates a default configuration including the values
@@ -89,11 +107,9 @@ func DefaultConfig() *Config {
 	return cf
 }
 
-// StandardMain is what should be called to start the service.
-// It never returns.
-func StandardMain(cf *Config, builder Builder) {
-	cf.Load()
-
+// StandardSetup is what should be called to set up the service before
+// running it. It returns a server, or possibly nil.
+func StandardSetup(cf *Config, builder Builder) *http.Server {
 	docs := cf.GetString("docs")
 	if docs != "" {
 		var outf = os.Stdout
@@ -103,10 +119,11 @@ func StandardMain(cf *Config, builder Builder) {
 			if err != nil {
 				log.Fatalf("could not write docs to %s", docs)
 			}
+			return nil
 		}
 		svc := builder.Build(nil, cf.GetString("rootpath"))
 		svc.GenerateDocumentation(outf)
-		return
+		return nil
 	}
 
 	// create the logger
@@ -142,9 +159,5 @@ func StandardMain(cf *Config, builder Builder) {
 		WriteTimeout: cf.GetDuration("WRITE_TIMEOUT"),
 	}
 	logger.WithField("port", cf.GetInt("port")).Info("server listening")
-
-	// if your service requires cleanup before exiting, or can be restarted or
-	// reloaded, set up the appropriate functions and pass them here.
-	WatchSignals(nil, logAndDie(logger, "SIGINT"), logAndDie(logger, "SIGTERM"))
-	log.Fatal(server.ListenAndServe())
+	return server
 }
