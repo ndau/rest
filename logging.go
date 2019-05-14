@@ -1,6 +1,9 @@
 package rest
 
 import (
+	"bufio"
+	"errors"
+	"net"
 	"net/http"
 	"time"
 
@@ -12,6 +15,15 @@ type LogWriter struct {
 	http.ResponseWriter
 	status int
 	length int
+}
+
+// Hijack implements http.Hijacker for LogWriter
+func (w *LogWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	if hj, ok := w.ResponseWriter.(http.Hijacker); ok {
+		return hj.Hijack()
+	} else {
+		return nil, nil, errors.New("LogWriter's ResponseWriter was not a hijacker")
+	}
 }
 
 // WriteHeader proxies http.ResponseWriter.WriteHeader
