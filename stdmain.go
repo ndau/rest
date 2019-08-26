@@ -127,7 +127,12 @@ func StandardSetup(cf *Config, builder Builder) *http.Server {
 	}
 
 	// create the logger
-	hlog := honeycomb.Setup(log.New())
+	var hlog log.FieldLogger
+	if builder.GetLogger() != nil {
+		hlog = builder.GetLogger()
+	} else {
+		hlog = honeycomb.Setup(log.New())
+	}
 	logger := hlog.WithFields(log.Fields{
 		"rootpath": cf.GetString("rootpath"),
 	})
