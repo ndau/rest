@@ -18,7 +18,7 @@ import (
 	"time"
 
 	"github.com/go-zoo/bone"
-	"github.com/oneiro-ndev/ndau/pkg/ndauapi/reqres"
+	"github.com/ndau/ndau/pkg/ndauapi/reqres"
 )
 
 // Count returns a HandlerFunc that counts from start to end

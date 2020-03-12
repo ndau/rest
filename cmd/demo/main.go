@@ -13,7 +13,7 @@ package main
 import (
 	"log"
 
-	"github.com/oneiro-ndev/rest"
+	"github.com/ndau/rest"
 )
 
 func main() {

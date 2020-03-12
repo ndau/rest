@@ -18,7 +18,7 @@ import (
 	"syscall"
 
 	"github.com/kentquirk/boneful"
-	"github.com/oneiro-ndev/o11y/pkg/honeycomb"
+	"github.com/ndau/o11y/pkg/honeycomb"
 	"github.com/rs/cors"
 	log "github.com/sirupsen/logrus"
 )

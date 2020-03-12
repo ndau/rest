@@ -12,7 +12,7 @@ package main
 
 import (
 	"github.com/kentquirk/boneful"
-	"github.com/oneiro-ndev/rest"
+	"github.com/ndau/rest"
 	log "github.com/sirupsen/logrus"
 )
 
